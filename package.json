@@ -1,0 +1,22 @@
+{
+  "name": "min-stream-chrome",
+  "version": "0.0.0",
+  "description": "min-stream bindings for chrome packaged apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/creationix/min-stream-chrome.git"
+  },
+  "keywords": [
+    "min-stream",
+    "chrome",
+    "stream"
+  ],
+  "author": "Tim Caswell <tim@creationix.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "6c8ef29d257fe9b2b0dcc4af3d5ac28a51d2ec44"
+}
