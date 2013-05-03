@@ -3,12 +3,18 @@ function createServer(address, port, callback) {
   chrome.socket.create("tcp", function (info) {
     var serverId = info.socketId;
     chrome.socket.listen(serverId, address, port, 511, function (result) {
-      if (result) { throw new Error("TODO: handle result"); }
+      if (result < 0) {
+        throw new Error("Error code " + result + " while listening to " + address + ":" + port);
+      }
+
       getNext();
       function getNext() {
         chrome.socket.accept(serverId, function (info) {
-          if (info.resultCode) { throw new Error("TODO: handle resultCode"); }
-          callback(null, wrapSocket(info.socketId));
+          console.log(info);
+          if (info.resultCode < 0) {
+            throw new Error("Error code " + info.resultCode + " while accepting connection");
+          }
+          callback(wrapSocket(info.socketId));
           getNext();
         });
       }
