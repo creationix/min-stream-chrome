@@ -1,31 +1,40 @@
-exports.createServer = createServer;
-function createServer(address, port, callback) {
-  chrome.socket.create("tcp", function (info) {
-    var serverId = info.socketId;
-    chrome.socket.listen(serverId, address, port, 511, function (result) {
-      if (result < 0) {
-        throw new Error("Error code " + result + " while listening to " + address + ":" + port);
-      }
+var socket = chrome.socket;
 
-      getNext();
-      function getNext() {
-        chrome.socket.accept(serverId, function (info) {
-          console.log(info);
-          if (info.resultCode < 0) {
-            throw new Error("Error code " + info.resultCode + " while accepting connection");
-          }
-          callback(wrapSocket(info.socketId));
-          getNext();
-        });
+exports.createServer = createServer;
+// Returns a source that emits requests.
+function createServer(address, port, callback) {
+  socket.create("tcp", function (info) {
+    socket.listen(info.socketId, address, port, 511, function (result) {
+      if (result < 0) {
+        return callback(new Error("Error code " + result + " while listening to " + address + ":" + port));
       }
+      return callback(null, wrapServer(info.socketId));
     });
   });
 }
 
+function wrapServer(id) {
+  return {
+    source: read,
+    socketId: id,
+  };
+  function read(close, callback) {
+    if (close) {
+      throw new Error("TODO: Implement server closing");
+    }
+    socket.accept(id, function (info) {
+      if (info.resultCode < 0) {
+        return callback(new Error("Error code " + info.resultCode + " while accepting connection"));
+      }
+      callback(null, wrapSocket(info.socketId));
+    });
+  };
+}
+
 exports.connect = connect;
 function connect(address, port, callback) {
-  chrome.socket.create("tcp", function (info) {
-    chrome.socket.connect(info.socketId, address, port, function (result) {
+  socket.create("tcp", function (info) {
+    socket.connect(info.socketId, address, port, function (result) {
       if (result < 0) {
         return callback(new Error("Error code " + result + " while connecting to " + address + ":" + port));
       }
@@ -47,11 +56,11 @@ exports.socketToSource = socketToSource;
 function socketToSource(id) {
   return function (close, callback) {
     if (close) {
-      chrome.socket.disconnect(id);
-      chrome.socket.destroy(id);
+      try { socket.disconnect(id); } catch (err ) {}
+      try { socket.destroy(id); } catch (err ) {}
       return callback();
     }
-    chrome.socket.read(id, function (info) {
+    socket.read(id, function (info) {
       if (info.resultCode < 0) {
         return callback(new Error("Error code " + info.resultCode + " while reading from socket " + id));
       }
@@ -68,17 +77,17 @@ function socketToSink(id) {
     read(null, onRead);
     function onRead(err, chunk) {
       if (chunk === undefined) {
-        socket.disconnect(id);
-        socket.destroy(id);
+        try { socket.disconnect(id); } catch (err ) {}
+        try { socket.destroy(id); } catch (err ) {}
         return read(err, noop);
       }
       if (typeof chunk === "string") {
         stringToBuffer(chunk, function (buffer) {
-          chrome.socket.write(id, buffer, onWrite);
+          socket.write(id, buffer, onWrite);
         });
       }
       else {
-        chrome.socket.write(id, chunk, onWrite);
+        socket.write(id, chunk, onWrite);
       }
     }
     function onWrite(info) {
