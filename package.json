@@ -2,7 +2,7 @@
   "name": "min-stream-chrome",
   "version": "0.0.0",
   "description": "min-stream bindings for chrome packaged apps",
-  "main": "index.js",
+  "main": "tcp.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
