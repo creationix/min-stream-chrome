@@ -15,6 +15,9 @@
     "chrome",
     "stream"
   ],
+  "dependencies": {
+    "buffer-tools": "*"
+  },
   "author": "Tim Caswell <tim@creationix.com>",
   "license": "MIT",
   "readmeFilename": "README.md",

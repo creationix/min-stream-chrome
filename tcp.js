@@ -1,4 +1,5 @@
 var socket = chrome.socket;
+var buf = require('buffer-tools');
 
 exports.createServer = createServer;
 // Returns a source that emits requests.
@@ -28,7 +29,7 @@ function wrapServer(id) {
       }
       callback(null, wrapSocket(info.socketId));
     });
-  };
+  }
 }
 
 exports.connect = connect;
@@ -64,7 +65,7 @@ function socketToSource(id) {
       if (info.resultCode < 0) {
         return callback(new Error("Error code " + info.resultCode + " while reading from socket " + id));
       }
-      callback(null, info.data);
+      callback(null, new Uint8Array(info.data));
     });
   };
 }
@@ -77,18 +78,14 @@ function socketToSink(id) {
     read(null, onRead);
     function onRead(err, chunk) {
       if (chunk === undefined) {
-        try { socket.disconnect(id); } catch (err ) {}
+        // try { socket.disconnect(id); } catch (err ) {}
         try { socket.destroy(id); } catch (err ) {}
         return read(err, noop);
       }
       if (typeof chunk === "string") {
-        stringToBuffer(chunk, function (buffer) {
-          socket.write(id, buffer, onWrite);
-        });
+        chunk = buf.fromString(chunk);
       }
-      else {
-        socket.write(id, chunk, onWrite);
-      }
+      socket.write(id, chunk.buffer, onWrite);
     }
     function onWrite(info) {
       if (info.bytesWritten < 0) {
@@ -98,12 +95,3 @@ function socketToSink(id) {
     }
   };
 }
-
-function stringToBuffer(string, callback) {
-  var reader = new FileReader();
-  reader.onload = function (evt) {
-    callback(evt.target.result);
-  };
-  reader.readAsArrayBuffer(new Blob([string]));
-}
-
