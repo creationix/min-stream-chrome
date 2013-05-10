@@ -2,7 +2,7 @@
 "use strict";
 
 var socket = chrome.socket;
-var buf = require('buffer-tools');
+var bops = require('bops');
 
 exports.createServer = createServer;
 // Returns a source that emits requests.
@@ -89,7 +89,7 @@ function socketToSink(id) {
         return read(err, noop);
       }
       if (typeof chunk === "string") {
-        chunk = buf.fromString(chunk);
+        chunk = bops.from(chunk);
       }
       socket.write(id, chunk.buffer, onWrite);
     }

@@ -1,6 +1,6 @@
 {
   "name": "min-stream-chrome",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "min-stream bindings for chrome packaged apps",
   "main": "tcp.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "stream"
   ],
   "dependencies": {
-    "buffer-tools": "*"
+    "bops": "~0.0.3"
   },
   "author": "Tim Caswell <tim@creationix.com>",
   "license": "MIT",
