@@ -1,3 +1,6 @@
+/*global chrome*/
+"use strict";
+
 var socket = chrome.socket;
 var buf = require('buffer-tools');
 
@@ -15,11 +18,7 @@ function createServer(address, port, callback) {
 }
 
 function wrapServer(id) {
-  return {
-    source: read,
-    socketId: id,
-  };
-  function read(close, callback) {
+  var read = function (close, callback) {
     if (close) {
       throw new Error("TODO: Implement server closing");
     }
@@ -29,7 +28,12 @@ function wrapServer(id) {
       }
       callback(null, wrapSocket(info.socketId));
     });
-  }
+  };
+  read.is = "min-stream-read";
+  return {
+    source: read,
+    socketId: id,
+  };
 }
 
 exports.connect = connect;
@@ -55,7 +59,7 @@ function wrapSocket(id) {
 
 exports.socketToSource = socketToSource;
 function socketToSource(id) {
-  return function (close, callback) {
+  var fn = function (close, callback) {
     if (close) {
       try { socket.disconnect(id); } catch (err ) {}
       try { socket.destroy(id); } catch (err ) {}
@@ -68,13 +72,15 @@ function socketToSource(id) {
       callback(null, new Uint8Array(info.data));
     });
   };
+  fn.is = "min-stream-source";
+  return fn;
 }
 
 function noop() {}
 
 exports.socketToSink = socketToSink;
 function socketToSink(id) {
-  return function (read) {
+  var fn = function (read) {
     read(null, onRead);
     function onRead(err, chunk) {
       if (chunk === undefined) {
@@ -94,4 +100,6 @@ function socketToSink(id) {
       read(null, onRead);
     }
   };
+  fn.is = "min-stream-sink";
+  return fn;
 }
