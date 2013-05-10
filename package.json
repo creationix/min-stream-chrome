@@ -1,6 +1,6 @@
 {
   "name": "min-stream-chrome",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "min-stream bindings for chrome packaged apps",
   "main": "tcp.js",
   "scripts": {

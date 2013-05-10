@@ -72,7 +72,7 @@ function socketToSource(id) {
       callback(null, new Uint8Array(info.data));
     });
   };
-  fn.is = "min-stream-source";
+  fn.is = "min-stream-read";
   return fn;
 }
 
